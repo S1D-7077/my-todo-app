@@ -2,15 +2,16 @@ const taskInput = document.getElementById("task-input");
 const addBtn = document.getElementById("add-btn");
 const taskList = document.getElementById("task-list");
 
-// Load tasks from backend
-async function loadTasks() {
-  const res = await fetch("/tasks");
-  const tasks = await res.json();
+// Load tasks from localStorage
+function loadTasks() {
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
   taskList.innerHTML = "";
+
   if (tasks.length === 0) {
     taskList.innerHTML = `<li class="empty">No tasks yet!</li>`;
     return;
   }
+
   tasks.forEach((task, index) => {
     const li = document.createElement("li");
     li.innerHTML = `
@@ -22,21 +23,23 @@ async function loadTasks() {
 }
 
 // Add task
-addBtn.addEventListener("click", async () => {
+addBtn.addEventListener("click", () => {
   const task = taskInput.value.trim();
   if (!task) return;
-  await fetch("/tasks", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ task }),
-  });
+
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.push(task);
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+
   taskInput.value = "";
   loadTasks();
 });
 
 // Delete task
-async function deleteTask(index) {
-  await fetch(`/tasks/${index}`, { method: "DELETE" });
+function deleteTask(index) {
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.splice(index, 1);
+  localStorage.setItem("tasks", JSON.stringify(tasks));
   loadTasks();
 }
 
